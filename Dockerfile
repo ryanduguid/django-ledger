@@ -1,19 +1,24 @@
 FROM python:latest
 
+# Copy uv binary from astral-sh
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-RUN apt-get update
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-RUN pip3 install --upgrade pip
+# Copy dependency files first for caching
+COPY pyproject.toml uv.lock /app/
 
-RUN pip3 install -U pipenv
+# Install dependencies using uv
+RUN uv sync --frozen --no-dev
 
+# Copy the rest of the project
 COPY . /app/
-
-RUN pipenv install
 
 EXPOSE 8000
 
