@@ -18,14 +18,45 @@ from django.core.exceptions import (
 )
 from django.db.models import Q
 from django.http import Http404, HttpResponse
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.dateparse import parse_date
+from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_protect
 from django.views.generic.dates import YearMixin, MonthMixin, DayMixin
 
 from django_ledger.models import EntityModel, InvoiceModel, BillModel, LedgerModel
 from django_ledger.models.entity import EntityModelFiscalPeriodMixIn
 from django_ledger.settings import DJANGO_LEDGER_AUTHORIZED_SUPERUSER
+
+
+class DjangoLedgerActionViewMixIn:
+    """Confirm on safe requests; require CSRF protection for action submissions."""
+
+    http_method_names = ['get', 'head', 'post', 'options']
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return render(request, 'django_ledger/components/action_confirmation.html', {
+            'object': self.object,
+            'view': self,
+            'entity_model': self.AUTHORIZED_ENTITY_MODEL,
+            'action_label': self.action_name.replace('_', ' ').capitalize(),
+        })
+
+    def get_safe_next_url(self):
+        next_url = self.request.POST.get('next') or self.request.GET.get('next')
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure(),
+        ):
+            return next_url
+        return None
 
 
 class ContextFromToDateMixin:

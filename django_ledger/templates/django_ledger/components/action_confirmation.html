@@ -1,0 +1,13 @@
+{% extends 'django_ledger/layouts/content_layout_1.html' %}
+{% load i18n %}
+
+{% block view_content %}
+    <div class="box">
+        <h1 class="title">{% trans 'Confirm action' %}</h1>
+        <p>{{ action_label }}: {{ object }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="button is-primary">{% trans 'Confirm' %}</button>
+        </form>
+    </div>
+{% endblock %}

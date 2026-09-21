@@ -27,7 +27,7 @@ from django_ledger.forms.transactions import get_transactionmodel_formset_class
 from django_ledger.io.io_core import get_localtime
 from django_ledger.models import EntityModel, LedgerModel
 from django_ledger.models.journal_entry import JournalEntryModel
-from django_ledger.views.mixins import DjangoLedgerSecurityMixIn
+from django_ledger.views.mixins import DjangoLedgerActionViewMixIn, DjangoLedgerSecurityMixIn
 
 
 class JournalEntryModelModelBaseView(DjangoLedgerSecurityMixIn):
@@ -248,11 +248,11 @@ class JournalEntryModelTXSDetailView(JournalEntryModelModelBaseView, DetailView)
 
 # ACTION VIEWS...
 class BaseJournalEntryActionView(
+    DjangoLedgerActionViewMixIn,
     JournalEntryModelModelBaseView,
     RedirectView,
     SingleObjectMixin
 ):
-    http_method_names = ['get']
     pk_url_kwarg = 'je_pk'
     action_name = None
     commit = True
@@ -263,7 +263,7 @@ class BaseJournalEntryActionView(
         ).for_ledger(ledger_pk=self.kwargs['ledger_pk'])
 
     def get_redirect_url(self, *args, **kwargs):
-        next_url = self.request.GET.get('next')
+        next_url = self.get_safe_next_url()
         if next_url:
             return next_url
         return reverse('django_ledger:je-list',
@@ -272,11 +272,11 @@ class BaseJournalEntryActionView(
                            'ledger_pk': kwargs['ledger_pk']
                        })
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         kwargs['user_model'] = self.request.user
         if not self.action_name:
             raise ImproperlyConfigured('View attribute action_name is required.')
-        response = super(BaseJournalEntryActionView, self).get(request, *args, **kwargs)
+        response = RedirectView.get(self, request, *args, **kwargs)
         je_model: BaseJournalEntryActionView = self.get_object()
 
         try:

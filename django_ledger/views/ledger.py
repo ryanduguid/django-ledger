@@ -28,6 +28,7 @@ from django_ledger.io.io_core import get_localdate
 from django_ledger.models import EntityModel
 from django_ledger.models.ledger import LedgerModel
 from django_ledger.views.mixins import (
+    DjangoLedgerActionViewMixIn,
     BaseDateNavigationUrlMixIn,
     DateReportMixIn,
     DjangoLedgerSecurityMixIn,
@@ -169,20 +170,19 @@ class LedgerModelDeleteView(LedgerModelModelBaseView, DeleteView):
 # ACTIONS....
 
 
-class LedgerModelModelActionView(LedgerModelModelBaseView, RedirectView, SingleObjectMixin):
-    http_method_names = ['get']
+class LedgerModelModelActionView(DjangoLedgerActionViewMixIn, LedgerModelModelBaseView, RedirectView, SingleObjectMixin):
     pk_url_kwarg = 'ledger_pk'
     action_name = None
     commit = True
 
     def get_redirect_url(self, *args, **kwargs):
-        next_url = self.request.GET.get('next', None)
+        next_url = self.get_safe_next_url()
         if next_url:
             return next_url
         ledger_model: LedgerModel = self.object
         return ledger_model.get_journal_entry_list_url()
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         if not self.action_name:
             raise ImproperlyConfigured('View attribute action_name is required.')
         ledger_model: LedgerModel = self.get_object()
@@ -193,7 +193,7 @@ class LedgerModelModelActionView(LedgerModelModelBaseView, RedirectView, SingleO
         except ValidationError as e:
             messages.add_message(request, message=e.message, level=messages.ERROR, extra_tags='is-danger')
 
-        return super().get(request, **kwargs)
+        return RedirectView.get(self, request, **kwargs)
 
 
 # Ledger Balance Sheet Views...

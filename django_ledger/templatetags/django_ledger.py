@@ -476,6 +476,7 @@ def modal_action_v2(
         'http_method': http_method,
         'message': message,
         'html_id': html_id,
+        'csrf_token': context.get('csrf_token'),
     }
 
 

@@ -24,7 +24,7 @@ from django_ledger.forms.invoice import (BaseInvoiceModelUpdateForm, InvoiceMode
 from django_ledger.io.io_core import get_localdate
 from django_ledger.models import EntityModel, LedgerModel, EstimateModel
 from django_ledger.models.invoice import InvoiceModel
-from django_ledger.views.mixins import DjangoLedgerSecurityMixIn
+from django_ledger.views.mixins import DjangoLedgerActionViewMixIn, DjangoLedgerSecurityMixIn
 
 
 class InvoiceModelModelViewQuerySetMixIn:
@@ -419,11 +419,10 @@ class InvoiceModelDeleteView(DjangoLedgerSecurityMixIn, InvoiceModelModelViewQue
 
 
 # ACTION VIEWS...
-class BaseInvoiceActionView(DjangoLedgerSecurityMixIn,
+class BaseInvoiceActionView(DjangoLedgerActionViewMixIn, DjangoLedgerSecurityMixIn,
                             RedirectView,
                             InvoiceModelModelViewQuerySetMixIn,
                             SingleObjectMixin):
-    http_method_names = ['get']
     pk_url_kwarg = 'invoice_pk'
     action_name = None
     commit = True
@@ -435,12 +434,15 @@ class BaseInvoiceActionView(DjangoLedgerSecurityMixIn,
                            'invoice_pk': kwargs['invoice_pk']
                        })
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         kwargs['user_model'] = self.request.user
         if not self.action_name:
             raise ImproperlyConfigured('View attribute action_name is required.')
-        response = super(BaseInvoiceActionView, self).get(request, *args, **kwargs)
+        response = RedirectView.get(self, request, *args, **kwargs)
         invoice_model: InvoiceModel = self.get_object()
+
+        if self.action_name == 'mark_as_draft':
+            kwargs['draft_date'] = None
 
         try:
             getattr(invoice_model, self.action_name)(commit=self.commit, **kwargs)

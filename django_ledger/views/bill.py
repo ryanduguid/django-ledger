@@ -33,7 +33,7 @@ from django_ledger.forms.bill import (
 from django_ledger.io.io_core import get_localdate
 from django_ledger.models import EntityModel, PurchaseOrderModel, EstimateModel, BillModelQuerySet
 from django_ledger.models.bill import BillModel
-from django_ledger.views.mixins import DjangoLedgerSecurityMixIn
+from django_ledger.views.mixins import DjangoLedgerActionViewMixIn, DjangoLedgerSecurityMixIn
 
 
 class BillModelModelBaseView(DjangoLedgerSecurityMixIn):
@@ -495,8 +495,7 @@ class BillModelUpdateView(BillModelModelBaseView, UpdateView):
 
 
 # ACTION VIEWS...
-class BaseBillActionView(BillModelModelBaseView, RedirectView, SingleObjectMixin):
-    http_method_names = ['get']
+class BaseBillActionView(DjangoLedgerActionViewMixIn, BillModelModelBaseView, RedirectView, SingleObjectMixin):
     pk_url_kwarg = 'bill_pk'
     action_name = None
     commit = True
@@ -508,11 +507,11 @@ class BaseBillActionView(BillModelModelBaseView, RedirectView, SingleObjectMixin
                            'bill_pk': kwargs['bill_pk']
                        })
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         kwargs['user_model'] = self.request.user
         if not self.action_name:
             raise ImproperlyConfigured('View attribute action_name is required.')
-        response = super(BaseBillActionView, self).get(request, *args, **kwargs)
+        response = RedirectView.get(self, request, *args, **kwargs)
         bill_model: BillModel = self.get_object()
 
         try:
