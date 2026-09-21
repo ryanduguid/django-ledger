@@ -1036,17 +1036,18 @@ class InvoiceModelAbstract(
 
         if draft_date:
             if isinstance(draft_date, datetime):
-                self.draft_date = draft_date.date()
+                self.date_draft = draft_date.date()
             elif isinstance(draft_date, date):
-                self.draft_date = draft_date
+                self.date_draft = draft_date
         else:
-            self.draft_date = get_localdate()
+            self.date_draft = get_localdate()
 
         self.invoice_status = self.INVOICE_STATUS_DRAFT
         self.clean()
         if commit:
             self.save(update_fields=[
                 'invoice_status',
+                'date_draft',
                 'updated'
             ])
         invoice_status_draft.send_robust(sender=self.__class__,

@@ -101,7 +101,14 @@ class AccountModelTests(DjangoLedgerBaseTest):
         # cannot create an account with same code again...
         response_create = self.CLIENT.post(account_create_url, data=form_data)
         self.assertEqual(response_create.status_code, 200)
-        self.assertContains(response_create, 'Account with this Chart of Accounts and Account Code already exists')
+        errors = response_create.context['form'].non_field_errors().as_data()
+        self.assertEqual([error.messages for error in errors], [
+            ['Account codes must be unique for each Chart of Accounts Model.'],
+        ])
+        self.assertContains(response_create, str(errors[0].messages[0]))
+        self.assertEqual(AccountModel.objects.for_entity(
+            entity_model=entity_model, coa_model=entity_model.default_coa_slug,
+        ).with_codes(codes=NEW_ACCOUNT_CODE).count(), 1)
 
     def test_account_activation(self):
 

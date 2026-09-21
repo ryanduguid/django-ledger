@@ -90,6 +90,13 @@ class EntityModelQuerySet(MP_NodeQuerySet):
     Inherits from the Materialized Path Node QuerySet Class from Django Treebeard.
     """
 
+    def delete(self, *args, **kwargs):
+        # Treebeard defers relationship fields while collecting the subtree.
+        return super(EntityModelQuerySet, self.select_related(None)).delete(*args, **kwargs)
+
+    delete.alters_data = True
+    delete.queryset_only = True
+
     def hidden(self) -> 'EntityModelQuerySet':
         """
         A QuerySet of all hidden EntityModel.

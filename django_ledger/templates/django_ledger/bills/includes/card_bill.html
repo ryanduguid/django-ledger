@@ -159,7 +159,7 @@
                            id="{{ bill.get_mark_as_review_html_id }}-button"
                            class="card-footer-item has-text-info has-text-centered">{% trans 'Mark as Draft' %}</a>
                         {# MARK AS DRAFT MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_draft_url bill.get_mark_as_draft_message bill.get_mark_as_draft_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_draft_url bill.get_mark_as_draft_message bill.get_mark_as_draft_html_id http_method='post' %}
                     {% endif %}
 
                     {# MARK REVIEW #}
@@ -168,7 +168,7 @@
                            id="{{ bill.get_mark_as_review_html_id }}-button"
                            class="card-footer-item has-text-info has-text-centered">{% trans 'Mark as Review' %}</a>
                         {# MARK AS REVIEW MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_review_url bill.get_mark_as_review_message bill.get_mark_as_review_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_review_url bill.get_mark_as_review_message bill.get_mark_as_review_html_id http_method='post' %}
                     {% endif %}
 
                     {# MARK APPROVED #}
@@ -177,7 +177,7 @@
                            id="{{ bill.get_mark_as_approved_html_id }}-button"
                            class="card-footer-item has-text-success has-text-centered">{% trans 'Mark as Approved' %}</a>
                         {# MARK AS APPROVED MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_approved_url bill.get_mark_as_approved_message bill.get_mark_as_approved_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_approved_url bill.get_mark_as_approved_message bill.get_mark_as_approved_html_id http_method='post' %}
                     {% endif %}
 
                     {# MARK PAID #}
@@ -186,7 +186,7 @@
                            id="{{ bill.get_mark_as_paid_html_id }}-button"
                            class="card-footer-item has-text-success has-text-centered">{% trans 'Mark as Paid' %}</a>
                         {# MARK AS PAID MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_paid_url bill.get_mark_as_paid_message bill.get_mark_as_paid_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_paid_url bill.get_mark_as_paid_message bill.get_mark_as_paid_html_id http_method='post' %}
                     {% endif %}
 
                     {# VOID BUTTON #}
@@ -195,7 +195,7 @@
                            id="{{ bill.get_mark_as_void_html_id }}-button"
                            class="card-footer-item has-text-danger has-text-centered">{% trans 'Void' %}</a>
                         {# MARK AS VOID MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_void_url bill.get_mark_as_void_message bill.get_mark_as_void_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_void_url bill.get_mark_as_void_message bill.get_mark_as_void_html_id http_method='post' %}
                     {% endif %}
 
                     {# CANCEL BUTTON #}
@@ -204,7 +204,7 @@
                            id="{{ bill.get_mark_as_cenceled_html_id }}-button"
                            class="card-footer-item has-text-danger has-text-centered has-text-weight-bold">{% trans 'Cancel' %}</a>
                         {# MARK AS VOID MODAL #}
-                        {% modal_action_v2 bill bill.get_mark_as_canceled_url bill.get_mark_as_canceled_message bill.get_mark_as_canceled_html_id %}
+                        {% modal_action_v2 bill bill.get_mark_as_canceled_url bill.get_mark_as_canceled_message bill.get_mark_as_canceled_html_id http_method='post' %}
                     {% endif %}
                 </footer>
             </div>

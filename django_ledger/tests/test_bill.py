@@ -307,15 +307,18 @@ class BillModelTests(DjangoLedgerBaseTest):
         self.login_client()
         # today = get_localdate()
 
-        for i in range(5):
+        for accrue in [False, True, False, True, False]:
             entity_model: EntityModel = self.get_random_entity_model()
             bill_model: BillModel = choice(entity_model.get_bills())
+            # Exercise both presentation modes with the same generated bill fixtures.
+            bill_model.accrue = accrue
+            bill_model.save(update_fields=['accrue'])
             vendor_model = bill_model.vendor
             bill_detail_url = bill_model.get_absolute_url()
 
             with self.assertNumQueries(6):
                 bill_detail_response = self.CLIENT.get(bill_detail_url)
-            self.assertTrue(bill_detail_response.status_code, 200)
+            self.assertEqual(bill_detail_response.status_code, 200)
 
             # self.assertTrue(bill_model.is_draft())
             # 'Not Approved' is displayed to the user...
@@ -360,22 +363,22 @@ class BillModelTests(DjangoLedgerBaseTest):
                                 reverse('django_ledger:account-detail',
                                         kwargs={
                                             'entity_slug': entity_model.slug,
+                                            'coa_slug': bill_model.cash_account.coa_model.slug,
                                             'account_pk': bill_model.cash_account.uuid
                                         }))
 
             # amount paid is shown
             self.assertContains(bill_detail_response, 'id="djl-bill-detail-amount-paid"')
 
-            # amount owed is shown
-            self.assertContains(bill_detail_response, 'id="djl-bill-detail-amount-owed"')
-
             if not bill_model.accrue:
+                self.assertContains(bill_detail_response, 'id="djl-bill-detail-amount-owed"')
                 # amount prepaid is not shown
                 self.assertNotContains(bill_detail_response, ' id="djl-bill-detail-amount-prepaid"')
                 # amount unearned is not shown
                 self.assertNotContains(bill_detail_response, ' id="djl-bill-detail-amount-unearned"')
 
             else:
+                self.assertNotContains(bill_detail_response, 'id="djl-bill-detail-amount-owed"')
                 # amount prepaid is shown
                 self.assertContains(bill_detail_response, ' id="djl-bill-detail-amount-prepaid"')
                 # amount unearned is shown

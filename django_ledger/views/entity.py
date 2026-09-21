@@ -116,6 +116,9 @@ class EntityModelUpdateView(DjangoLedgerSecurityMixIn, EntityModelModelViewQuery
     form_class = EntityModelUpdateForm
     slug_url_kwarg = 'entity_slug'
 
+    def get_object(self, queryset=None):
+        return self.get_authorized_entity_instance()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = self.object.name
