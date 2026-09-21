@@ -1,5 +1,6 @@
 """F-018: request intent, entity boundaries and persisted accounting transitions."""
 
+from datetime import date, datetime
 from decimal import Decimal
 from html.parser import HTMLParser
 
@@ -182,6 +183,30 @@ class ActionRequestTests(TestCase):
             credit = transactions.filter(tx_type='credit').aggregate(total=Sum('amount'))['total']
             self.assertEqual(debit, credit)
             self.assertEqual(debit, Decimal('100.00'))
+
+    def test_invoice_draft_post_persists_transition_date(self):
+        InvoiceModel.objects.filter(pk=self.invoice.pk).update(date_draft=date(2020, 1, 1))
+        self.assertEqual(self.post('invoice-action-mark-as-review').status_code, 302)
+        self.assertEqual(self.post('invoice-action-mark-as-draft').status_code, 302)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.invoice_status, InvoiceModel.INVOICE_STATUS_DRAFT)
+        self.assertEqual(self.invoice.date_draft, timezone.localdate())
+
+    def test_invoice_draft_dates_respect_commit(self):
+        for supplied, expected in [(None, timezone.localdate()), (date(2020, 2, 3), date(2020, 2, 3)),
+                                   (datetime(2020, 4, 5, 12), date(2020, 4, 5))]:
+            for commit in [False, True]:
+                with self.subTest(supplied=supplied, commit=commit):
+                    InvoiceModel.objects.filter(pk=self.invoice.pk).update(
+                        invoice_status=InvoiceModel.INVOICE_STATUS_REVIEW, date_draft=date(2020, 1, 1),
+                    )
+                    self.invoice.refresh_from_db()
+                    self.invoice.mark_as_draft(supplied, commit=commit)
+                    self.assertEqual(self.invoice.date_draft, expected)
+                    self.invoice.refresh_from_db()
+                    self.assertEqual(self.invoice.date_draft, expected if commit else date(2020, 1, 1))
+                    self.assertEqual(self.invoice.invoice_status, InvoiceModel.INVOICE_STATUS_DRAFT
+                                     if commit else InvoiceModel.INVOICE_STATUS_REVIEW)
 
     def test_invalid_document_state_and_unbalanced_journal_refuse(self):
         for kind in ['invoice', 'bill']:
