@@ -375,8 +375,7 @@ class PurchaseOrderModelDetailView(PurchaseOrderModelModelViewQuerySetMixIn, Det
         )
         context['po_items'] = po_items_qs
         context['po_total_amount'] = sum(
-            i['po_total_amount'] for i in po_items_qs.values(
-                'po_total_amount', 'po_item_status') if i['po_item_status'] != 'cancelled')
+            item.po_total_amount for item in po_items_qs if item.po_item_status != 'cancelled')
         return context
 
 

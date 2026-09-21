@@ -16,6 +16,27 @@ UserModel = get_user_model()
 
 class EntityModelTests(DjangoLedgerBaseTest):
 
+    def test_queryset_delete_preserves_tree_and_siblings(self):
+        root = EntityModel.add_root(name='Sample root', slug='sample-root', admin=self.user_model)
+        child = root.add_child(name='Sample child', slug='sample-child', admin=self.user_model)
+        grandchild = child.add_child(name='Sample grandchild', slug='sample-grandchild', admin=self.user_model)
+        sibling = root.add_child(name='Sample sibling', slug='sample-sibling', admin=self.user_model)
+        EntityModel.objects.filter(pk=child.pk).delete()
+        self.assertFalse(EntityModel.objects.filter(pk__in=[child.pk, grandchild.pk]).exists())
+        self.assertTrue(EntityModel.objects.filter(pk=sibling.pk).exists())
+        root.refresh_from_db()
+        self.assertEqual(root.numchild, 1)
+
+    def test_update_refuses_another_owners_entity(self):
+        self.login_client()
+        other_user = UserModel.objects.create_user(username='sample-other-owner')
+        other = EntityModel.create_entity('Sample other entity', False, other_user, 1)
+        url = reverse('django_ledger:entity-update', kwargs={'entity_slug': other.slug})
+        self.assertEqual(self.CLIENT.get(url).status_code, 403)
+        self.assertEqual(self.CLIENT.post(url, {'name': 'Changed'}).status_code, 403)
+        other.refresh_from_db()
+        self.assertEqual(other.name, 'Sample other entity')
+
     def setUp(self) -> None:
         super(EntityModelTests, self).setUp()
 
@@ -218,8 +239,9 @@ class EntityModelTests(DjangoLedgerBaseTest):
         entity_model: EntityModel = choice(self.ENTITY_MODEL_QUERYSET)
 
         # ENTITY-DETAIL VIEW...
-        with self.assertNumQueries(2):
-            # this will redirect to entity-detail-month...
+        # Session, user and entity-authorisation queries precede the redirect.
+        with self.assertNumQueries(3):
+            # The dashboard opens the current year.
             entity_detail_url = reverse('django_ledger:entity-dashboard',
                                         kwargs={
                                             'entity_slug': entity_model.slug
@@ -228,17 +250,16 @@ class EntityModelTests(DjangoLedgerBaseTest):
 
         with self.assertNumQueries(8):  # previously 10
             local_dt = get_localdate()
-            entity_month_detail_url = reverse('django_ledger:entity-dashboard-month',
+            entity_year_detail_url = reverse('django_ledger:entity-dashboard-year',
                                               kwargs={
                                                   'entity_slug': entity_model.slug,
                                                   'year': local_dt.year,
-                                                  'month': local_dt.month
                                               })
-            self.assertRedirects(response, entity_month_detail_url)
+            self.assertRedirects(response, entity_year_detail_url)
 
         with self.assertNumQueries(8):
             # same as before, but this time the session must not be update because user has not suited entities...
-            response = self.CLIENT.get(entity_month_detail_url)
+            response = self.CLIENT.get(entity_year_detail_url)
             self.assertContains(response, text=entity_model.name)
             self.assertContains(response, text='Dashboard')
             self.assertTrue(response.context['bills'].count() >= 0)
