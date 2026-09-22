@@ -36,6 +36,14 @@ class IOTimestampTest(SimpleTestCase):
                     expected = expected.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
                 self.assertEqual(validate_io_timestamp(timestamp), expected)
 
+    @override_settings(USE_TZ=False)
+    def test_offset_strings_become_local_naive_without_use_tz(self):
+        # 00:35 at +10:00 is 10:35 the previous day in New York (UTC-04:00).
+        self.assertEqual(
+            validate_io_timestamp('2024-07-01T00:35:27.123456+10:00'),
+            datetime(2024, 6, 30, 10, 35, 27, 123456),
+        )
+
     def test_date_strings_still_use_local_midnight(self):
         for use_tz in (True, False):
             with self.subTest(use_tz=use_tz), self.settings(USE_TZ=use_tz):
