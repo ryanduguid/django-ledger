@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - python-version: '3.11'
-            django-spec: 'Django>=5.2,<5.3'
+            django-spec: 'Django>=5.2.17,<5.3'
           - python-version: '3.14'
             django-spec: 'Django'
     steps:
@@ -54,7 +54,7 @@ jobs:
           for package in django django-debug-toolbar sphinx myst-parser renku-sphinx-theme; do
             grep -q "^$package==" docs/source/requirements.txt
           done
-          if grep -Eq '^(notebook|jupyterlab|jupyter-server)==' docs/source/requirements.txt; then
+          if grep -Eq '^(notebook|jupyterlab|jupyter-server|tornado|platformdirs)==' docs/source/requirements.txt; then
             echo 'Documentation export includes notebook server dependencies'
             exit 1
           fi
