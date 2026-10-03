@@ -2,33 +2,64 @@ name: Django CI
 
 on:
   push:
-    branches: [develop]
+    branches: [master, develop]
   pull_request:
-    branches:
-      - develop
+    branches: [master, develop]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     python-version: [ '3.8.10', '3.9.0', '3.10.0' ]
-
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: '3.11'
+            django-spec: 'Django>=5.2.17,<5.3'
+          - python-version: '3.14'
+            django-spec: 'Django'
     steps:
-      - uses: actions/checkout@v2
-
-      # - name: Set up Python ${{ matrix.python-version }}
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          python-version: 3.9
-          # python-version: ${{ matrix.python-version }}
-
-      - name: Install Dependencies
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run Tests
+          python -m pip install -e . "${{ matrix.django-spec }}"
+      - name: Run tests
+        run: python manage.py test --settings=django_ledger.tests.settings --noinput
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.12.19'
+      - name: Check documentation export
         run: |
-          python manage.py test --noinput
+          uv export --locked --no-default-groups --group readthedocs --no-emit-project --format requirements.txt --output-file docs/source/requirements.txt --quiet
+          git diff --exit-code -- docs/source/requirements.txt
+          for package in django django-debug-toolbar sphinx myst-parser renku-sphinx-theme; do
+            grep -q "^$package==" docs/source/requirements.txt
+          done
+          if grep -Eq '^(notebook|jupyterlab|jupyter-server|tornado|platformdirs)==' docs/source/requirements.txt; then
+            echo 'Documentation export includes notebook server dependencies'
+            exit 1
+          fi
+      - name: Build documentation
+        run: |
+          uv venv --python 3.13 --seed
+          .venv/bin/python -m pip install --only-binary=:all: --require-hashes -r docs/source/requirements.txt
+          PATH="$PWD/.venv/bin:$PATH" make -C docs html
