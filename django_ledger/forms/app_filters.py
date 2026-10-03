@@ -18,7 +18,7 @@ class EntityFilterForm(Form):
         self.USER_MODEL = user_model
         self.form_id = form_id
         self.fields['entity_model'].queryset = EntityModel.objects.for_user(
-            user_model=self.USER_MODEL).only('slug', 'name')
+            user_model=self.USER_MODEL).select_related(None).only('slug', 'name')
         if form_id:
             self.fields['entity_model'].widget.attrs['class'] += f' djetler-default-entity-input-{self.form_id}'
 

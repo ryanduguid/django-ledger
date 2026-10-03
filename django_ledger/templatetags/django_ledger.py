@@ -372,12 +372,13 @@ def default_entity(context):
     identity = randint(0, 1000000)
     try:
         entity_uuid = session_entity_data['entity_uuid']
-        default_entity_form = EntityFilterForm(user_model=user, form_id=identity, current_entity_uuid=entity_uuid)
-    except TypeError or KeyError:
+    except (TypeError, KeyError):
         default_entity_form = EntityFilterForm(
             user_model=user,
             form_id=identity,
         )
+    else:
+        default_entity_form = EntityFilterForm(user_model=user, form_id=identity, current_entity_uuid=entity_uuid)
 
     return {
         'default_entity_form': default_entity_form,
