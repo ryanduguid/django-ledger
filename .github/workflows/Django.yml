@@ -49,6 +49,7 @@ jobs:
           version: '0.12.19'
       - name: Check dependency exports
         run: |
+          git ls-files --error-unmatch -- requirements.txt docs/requirements.txt docs/source/requirements.txt > /dev/null
           uv export --locked --no-default-groups --group dev --no-emit-project --format requirements.txt --output-file requirements.txt --quiet
           uv export --locked --no-default-groups --group dev --no-emit-project --format requirements.txt --output-file docs/requirements.txt --quiet
           uv export --locked --no-default-groups --group readthedocs --no-emit-project --format requirements.txt --output-file docs/source/requirements.txt --quiet
