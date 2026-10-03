@@ -42,13 +42,14 @@ classifiers = [
 [dependency-groups]
 dev = [
     "django-debug-toolbar>=6.0.0",
-    "jupyterlab>=4.4.9",
+    "jupyterlab>=4.6.4",
     "myst-parser>=4.0.1",
-    "notebook>=7.4.7",
+    "notebook>=7.6.3",
     "renku-sphinx-theme>=0.5.0",
     "sphinx>=8.2.3",
 ]
 readthedocs = [
+    "django-debug-toolbar>=6.0.0",
     "myst-parser>=4.0.1",
     "renku-sphinx-theme>=0.5.0",
     "sphinx>=8.2.3",
@@ -67,6 +68,14 @@ exclude = [
     "docs.source.*",
     "notebooks",
     "notebooks.*",
+]
+
+[tool.uv]
+constraint-dependencies = [
+    "fonttools>=4.65.0",
+    "urllib3>=2.8.0",
+    "tornado>=6.5.10",
+    "platformdirs>=4.11.14",
 ]
 
 [[tool.uv.index]]

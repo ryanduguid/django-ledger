@@ -67,11 +67,21 @@ class TransactionModelFormTest(DjangoLedgerBaseTest):
 
     def test_invalid_account(self):
         form = TransactionModelForm({
-            'account': 'Asset', 'tx_type': 'debit', 'amount': Decimal('100.00'),
+            'account': '00000000-0000-0000-0000-000000000000',
+            'tx_type': 'debit', 'amount': Decimal('100.00'),
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(set(form.errors), {'account'})
         self.assertEqual(form.errors.as_data()['account'][0].code, 'invalid_choice')
+
+    def test_malformed_account(self):
+        form = TransactionModelForm({
+            'account': 'Asset', 'tx_type': 'debit', 'amount': Decimal('100.00'),
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(set(form.errors), {'account'})
+        # Django 5.2 reports UUID parsing errors before checking model choices.
+        self.assertIn(form.errors.as_data()['account'][0].code, {'invalid', 'invalid_choice'})
 
 
 class TransactionModelFormSetTest(DjangoLedgerBaseTest):
