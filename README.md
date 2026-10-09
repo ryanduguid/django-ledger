@@ -1,5 +1,10 @@
 ![django ledger logo](assets/logo/django-ledger-logo@2x.png)
 
+**Fork status**
+
+[![Fork code quality](https://app.codacy.com/project/badge/Grade/378db327a5784de48d1d90ac4a3e5ca7?branch=master)](https://app.codacy.com/gh/ryanduguid/django-ledger/dashboard)
+[![Fork Django CI](https://github.com/ryanduguid/django-ledger/actions/workflows/Django.yml/badge.svg?branch=master)](https://github.com/ryanduguid/django-ledger/actions/workflows/Django.yml)
+
 # Django Ledger
 
 ## A Double Entry Accounting Engine for Django
