@@ -1445,7 +1445,7 @@ class IODatabaseMixIn:
         """
         TransactionModel = self.get_transaction_model()
         JournalEntryModel = self.get_journal_entry_model()
-        StagedTransactionModel = self.get_staged_transaction_model()
+        self.get_staged_transaction_model()
 
         with transaction.atomic():
             # Validates that credits/debits balance.
