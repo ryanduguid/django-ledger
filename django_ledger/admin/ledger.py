@@ -91,7 +91,6 @@ class JournalEntryModelInLine(TabularInline):
 
     def edit_txs_link(self, obj: JournalEntryModel):
         detail_url = obj.get_detail_txs_url()
-        next_url = None
         return format_html(
             format_string='<a class="changelink" target="_blank" href="{url}">Edit Txs</a>',
             url=detail_url
