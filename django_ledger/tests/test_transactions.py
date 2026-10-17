@@ -150,7 +150,7 @@ class TransactionModelFormSetTest(DjangoLedgerBaseTest):
 
         with self.assertRaises(
                 TransactionModelValidationError,
-                msg=f'Cannot create transaction on locked Journal Entry'
+                msg='Cannot create transaction on locked Journal Entry'
         ):
             je_model.transactionmodel_set.create(
                 amount=Decimal.from_float(100.00),
