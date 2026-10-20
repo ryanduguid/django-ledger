@@ -2,8 +2,8 @@
 
 **Fork status**
 
-[![Fork code quality](https://app.codacy.com/project/badge/Grade/378db327a5784de48d1d90ac4a3e5ca7?branch=master)](https://app.codacy.com/gh/ryanduguid/django-ledger/dashboard)
-[![Fork Django CI](https://github.com/ryanduguid/django-ledger/actions/workflows/Django.yml/badge.svg?branch=master)](https://github.com/ryanduguid/django-ledger/actions/workflows/Django.yml)
+[![Fork code quality](https://img.shields.io/codacy/grade/378db327a5784de48d1d90ac4a3e5ca7/master?style=flat&labelColor=000000)](https://app.codacy.com/gh/ryanduguid/django-ledger/dashboard)
+[![Fork Django CI](https://img.shields.io/github/actions/workflow/status/ryanduguid/django-ledger/Django.yml?branch=master&label=Django%20CI&style=flat&labelColor=000000)](https://github.com/ryanduguid/django-ledger/actions/workflows/Django.yml)
 
 # Django Ledger
 
